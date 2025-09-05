@@ -11,6 +11,7 @@ use std::{
 use tauri::{Emitter, State};
 use uuid::Uuid;
 use wait_timeout::ChildExt;
+use std::hash::{Hash, Hasher};
 
 // Windows-specific imports
 #[cfg(windows)]
@@ -29,6 +30,21 @@ pub struct Verdict {
     pub status: String,
     pub time: f32,
     pub memory: f32,
+}
+
+impl PartialEq for Verdict {
+    fn eq(&self, other: &Self) -> bool {
+        self.input == other.input && self.output == other.output
+    }
+}
+
+impl Eq for Verdict {}
+
+impl Hash for Verdict {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.input.hash(state);
+        self.output.hash(state);
+    }
 }
 
 #[tauri::command]
@@ -55,7 +71,7 @@ pub async fn test(
     create_dir_all(&dir).map_to_string()?;
     fs::write(file_path, source_file).map_to_string()?;
 
-    let mut verdicts = state.verdicts.clone();
+    let mut verdicts: Vec<Verdict> = state.verdicts.clone().into_iter().collect();
     for v in &mut verdicts {
         v.status = "Compiling".into();
         v.status_id = 1;

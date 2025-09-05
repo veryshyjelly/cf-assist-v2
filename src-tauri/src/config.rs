@@ -3,16 +3,16 @@ use handlebars_misc_helpers::register;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::collections::{BTreeMap, VecDeque, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fs;
 use std::io::Write;
+use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Mutex;
-use std::{path::Path};
 use tauri::State;
 
 use crate::utils::{extract_code_block, ResultTrait};
-use crate::{utils::resolve_path, AppState, Problem};
+use crate::{info::Problem, utils::resolve_path, AppState};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -169,7 +169,7 @@ impl Config {
                     .render("libcheck", &json!({"name": k}))
                     .map_to_string()?,
             )
-                .map_to_string_mess("Invalid regex for lib_check")?;
+            .map_to_string_mess("Invalid regex for lib_check")?;
             if re.is_match(&source_code) {
                 deque.push_back(k.clone());
             }
@@ -197,7 +197,7 @@ impl Config {
                         .render("libcheck", &json!({"name": k}))
                         .map_to_string()?,
                 )
-                    .map_to_string_mess("Invalid regex for lib_check")?;
+                .map_to_string_mess("Invalid regex for lib_check")?;
 
                 if re.is_match(v) {
                     deps.insert(k.clone());
@@ -213,7 +213,6 @@ impl Config {
 
         #[cfg(debug_assertions)]
         println!("Graph: {graph:?}");
-
 
         let sorted_libs = topo_sort(&graph)?;
 

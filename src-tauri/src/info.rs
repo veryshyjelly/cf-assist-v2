@@ -1,10 +1,7 @@
 use crate::judge::Verdict;
-use crate::WINDOW;
-use actix_web::{post, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
-use tauri::Emitter;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Info {
     name: String,
@@ -16,7 +13,7 @@ pub struct Info {
     tests: Vec<Test>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Test {
     input: String,
     output: String,
@@ -58,14 +55,4 @@ impl Info {
     pub fn get_verdicts(&self) -> Vec<Verdict> {
         self.tests.iter().map(|x| x.get_verdict()).collect()
     }
-}
-
-#[post("/")]
-pub async fn get_info(req_body: web::Json<Info>) -> impl Responder {
-    let window = WINDOW.get().expect("window-is-unavailable");
-    window.emit("set-problem", req_body.get_problem()).unwrap();
-    window
-        .emit("set-verdicts", req_body.get_verdicts())
-        .unwrap();
-    HttpResponse::Ok()
 }

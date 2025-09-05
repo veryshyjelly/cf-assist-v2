@@ -1,11 +1,11 @@
 import "./App.css";
-import {Box} from "@mantine/core";
+import { Box } from "@mantine/core";
 import TitleBar from "./Titlebar.tsx";
 import LandingPage from "./LandingPage.tsx";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import Home from "./Home.tsx";
-import {Problem, Verdict} from "./Languages.ts";
-import {listen} from "@tauri-apps/api/event";
+import { Problem, Verdict } from "./Languages.ts";
+import { listen } from "@tauri-apps/api/event";
 import {
     get_directory,
     get_problem,
@@ -13,14 +13,33 @@ import {
     set_problem,
     set_verdicts,
     run,
-    submit
+    submit,
+    add_verdicts
 } from "./commands.tsx";
+
+function uniqueVerdicts(verdicts: Verdict[]) {
+    const seen = new Set();
+    return verdicts.filter(v => {
+        const key = `${v.input} || ${v.output}`; // key only on input + output
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
 
 function App() {
     const [directory, setDirectory] = useState("");
     const [problem, setProblem] = useState<Problem | null>(null);
     const [verdicts, setVerdicts] = useState<Verdict[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const AddVerdicts = (extra_verdicts: Verdict[]): void => {
+        setVerdicts(prev => {
+            const updated = uniqueVerdicts([...prev, ...extra_verdicts]);
+            console.error("Updating verdicts:", updated);
+            return updated;
+        });
+    }
 
     useEffect(() => {
         get_directory().then((dir) => setDirectory(dir));
@@ -42,6 +61,9 @@ function App() {
         listen<Verdict[]>("set-verdicts", (event) =>
             set_verdicts(event.payload).then(() => setVerdicts(event.payload)),
         );
+        listen<Verdict[]>("add-verdicts", (event) =>
+            add_verdicts(event.payload).then(() => AddVerdicts(event.payload)),
+        );
     }, []);
 
     return (
@@ -52,9 +74,9 @@ function App() {
                 borderRadius: "15px"
             }}
         >
-            <TitleBar setDirectory={setDirectory} directory={directory} loading={loading} setLoading={setLoading}/>
-            {directory === "" && <LandingPage setDirectory={setDirectory}/>}
-            {directory !== "" && <Home problem={problem} verdicts={verdicts}/>}
+            <TitleBar setDirectory={setDirectory} directory={directory} loading={loading} setLoading={setLoading} />
+            {directory === "" && <LandingPage setDirectory={setDirectory} />}
+            {directory !== "" && <Home problem={problem} verdicts={verdicts} />}
         </Box>
     );
 }

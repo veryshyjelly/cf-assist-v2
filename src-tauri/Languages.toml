@@ -202,11 +202,11 @@ check_args = ["--version"]
 comment = "#"
 
 [22]
-cf_id = 75
+cf_id = 98
 name = "Rust"
 source_file = "main.rs"
 compiler_cmd = "rustc"
-compiler_args = ["-O", "main.rs"]
+compiler_args = ["--edition=2024", "-O", "main.rs"]
 run_cmd = "./main"
 run_cmd_win = "./main.exe"
 check_args = ["-V"]
@@ -243,7 +243,7 @@ check_args = ["--version"]
 comment = "//"
 
 [26]
-cf_id = 88
+cf_id = 99
 name = "Kotlin"
 source_file = "Main.kt"
 compiler_cmd = "kotlinc"
@@ -315,4 +315,14 @@ compiler_args = ["script.groovy"]
 run_cmd = "groovy"
 run_args = ["script"]
 check_args = ["--version"]
+comment = "//"
+
+[34]
+name = "Assembly (g++)"
+source_file = "main.s"
+compiler_cmd = "g++"
+compiler_args = ["-o", "main", "main.s"]
+run_cmd = "./main"
+run_cmd_win = "./main.exe"
+check_args = ["-v"]
 comment = "//"

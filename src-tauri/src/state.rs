@@ -3,7 +3,7 @@ use chrono::Local;
 use notify::{FsEventWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs::{create_dir_all, File},
     io::{BufReader, Write},
     ops::Deref,
@@ -17,9 +17,9 @@ use tauri::{Manager, State};
 use wait_timeout::ChildExt;
 
 // Windows-specific imports
+use arboard::Clipboard;
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
-use arboard::Clipboard;
 
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
@@ -35,7 +35,7 @@ pub struct AppState {
     #[serde(default, skip)]
     pub problem: Problem,
     #[serde(default, skip)]
-    pub verdicts: Vec<Verdict>,
+    pub verdicts: HashSet<Verdict>,
     #[serde(default, skip)]
     pub watcher: Option<Arc<RwLock<FsEventWatcher>>>,
 }
@@ -100,12 +100,17 @@ pub async fn set_problem(
 
 #[tauri::command]
 pub fn get_verdicts(state: State<'_, Mutex<AppState>>) -> Vec<Verdict> {
-    state.lock().unwrap().verdicts.clone()
+    state.lock().unwrap().verdicts.clone().into_iter().collect()
 }
 
 #[tauri::command]
 pub fn set_verdicts(verdicts: Vec<Verdict>, state: State<'_, Mutex<AppState>>) {
-    state.lock().unwrap().verdicts = verdicts
+    state.lock().unwrap().verdicts = verdicts.into_iter().collect()
+}
+
+#[tauri::command]
+pub fn add_verdicts(verdicts: Vec<Verdict>, state: State<'_, Mutex<AppState>>) {
+    state.lock().unwrap().verdicts.extend(verdicts.into_iter());
 }
 
 #[tauri::command]

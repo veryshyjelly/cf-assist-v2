@@ -2,16 +2,17 @@ mod config;
 mod info;
 mod judge;
 mod language;
+mod server;
 mod state;
 mod submit;
 mod utils;
 
 use actix_web::{web, App, HttpServer};
 use config::read_config;
-use info::*;
 use judge::*;
 use language::*;
 use notify::Event;
+use server::*;
 use state::*;
 use std::{
     sync::{mpsc, Arc, Mutex, OnceLock, RwLock},
@@ -58,15 +59,18 @@ pub fn run() {
 
             let web_state = web::Data::new(WebState {
                 sol: Mutex::new(None),
+                info: Mutex::new(None),
             });
 
             tauri::async_runtime::spawn(
                 HttpServer::new(move || {
                     App::new()
                         .app_data(web_state.clone())
-                        .service(get_info)
+                        .service(post_info)
                         .service(get_submit)
                         .service(post_submit)
+                        .service(get_info)
+                        .service(post_test_cases)
                 })
                 .bind(("127.0.0.1", 27121))?
                 .run(),
@@ -93,6 +97,7 @@ pub fn run() {
             set_problem,
             get_problem,
             set_verdicts,
+            add_verdicts,
             get_verdicts,
             create_file,
             copy_code,

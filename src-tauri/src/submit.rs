@@ -1,14 +1,9 @@
 use std::sync::Mutex;
 
-use actix_web::{get, post, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use tauri_plugin_http::reqwest;
 
 use crate::{utils::ResultTrait, AppState};
-
-pub struct WebState {
-    pub sol: Mutex<Option<Solution>>,
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,36 +18,7 @@ pub struct Solution {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EmptySolution {
-    empty: bool,
-}
-
-#[get("/getSubmit")]
-pub async fn get_submit(data: web::Data<WebState>) -> impl Responder {
-    let sol = data.sol.lock().unwrap().take();
-
-    if sol.is_some() {
-        let solution = sol.unwrap();
-
-        #[cfg(debug_assertions)]
-        println!("submitting solution");
-
-        return HttpResponse::Ok().json(solution);
-    }
-
-    #[cfg(debug_assertions)]
-    println!("no solution returning empty");
-
-    HttpResponse::Ok().json(EmptySolution { empty: true })
-}
-
-#[post("/submit")]
-pub async fn post_submit(sol: web::Json<Solution>, data: web::Data<WebState>) -> impl Responder {
-    let _ = data.sol.lock().unwrap().insert(sol.0);
-
-    #[cfg(debug_assertions)]
-    println!("inserted solution into data");
-
-    HttpResponse::Ok()
+    pub empty: bool,
 }
 
 #[tauri::command]

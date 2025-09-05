@@ -96,6 +96,14 @@ export const set_verdicts = async (verdicts: Verdict[]) =>
     "Could not set verdicts",
   )) ?? false;
 
+export const add_verdicts = async (verdicts: Verdict[]) =>
+  (await invokeWithNotify<boolean>(
+    "add_verdicts",
+    { verdicts },
+    undefined,
+    "Could not add verdicts",
+  )) ?? false;
+
 export const get_verdicts = async () =>
   await invokeWithNotify<Verdict[]>(
     "get_verdicts",
