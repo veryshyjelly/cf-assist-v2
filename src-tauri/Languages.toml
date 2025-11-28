@@ -326,3 +326,12 @@ run_cmd = "./main"
 run_cmd_win = "./main.exe"
 check_args = ["-v"]
 comment = "//"
+
+[35]
+name = "Uiua"
+source_file = "main.ua"
+compiler_cmd = "uiua"
+compiler_args = ["stand", "main.ua", "-o", "main"]
+run_cmd = "./main"
+check_args = ["-V"]
+comment = "#"
