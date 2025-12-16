@@ -335,3 +335,29 @@ compiler_args = ["stand", "main.ua", "-o", "main"]
 run_cmd = "./main"
 check_args = ["-V"]
 comment = "#"
+
+[36]
+name = "Racket"
+source_file = "main.rkt"
+compiler_cmd = "racket"
+compiler_args = ["-l", "raco", "exe", "-o", "main", "main.rkt"]
+run_cmd = "./main"
+check_args = ["-v"]
+comment = ";"
+
+[37]
+name = "Gleam"
+source_file = "main.gleam"
+compiler_cmd = "gbuild"
+run_cmd = "gleam"
+run_args = ["run", "--no-print-progress", "-m", "main"]
+check_args = ["-v"]
+comment = "//"
+
+[38]
+name = "Lean"
+source_file = "Main.lean"
+compiler_cmd = "leanbuild"
+run_cmd = "./main"
+check_args = ["-v"]
+comment = "--"

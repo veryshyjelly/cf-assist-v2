@@ -1,0 +1,61 @@
+author = "Ayush Biswas"
+
+editor = "code"
+
+[code]
+filename = ''' {{#if (regex_is_match pattern="codeforces.com" on=url)}} {{#with (regex_captures
+    pattern="(?:problemset/problem|contest)/(\\d+)(?:/problem)?/([A-Za-z0-9]+)"
+    on=url) as |url_parts|}} {{#with (regex_captures
+      pattern="^[A-Za-z0-9]+\\.\\s*(.+)$"
+      on=../title) as |title_parts|}}
+./Src/Bin/{{to_pascal_case url_parts._1}}_{{to_pascal_case url_parts._2}}.lean
+{{/with}}
+{{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="atcoder.jp" on=url)}} {{#with (regex_captures
+  pattern="contests/([^/]+)/tasks/([^_]+)_([a-z]+)"
+  on=url) as |url_parts|}} {{#with (regex_captures
+    pattern="^[A-Za-z0-9]+\\s*\\-\\s*(.+)$"
+    on=../title) as |title_parts|}}
+./Src/Bin/{{to_pascal_case url_parts._1}}{{to_pascal_case url_parts._3}}.lean
+{{/with}}
+{{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="cses.fi" on=url)}}
+{{#with (regex_captures
+  pattern="problemset/task/(\\d+)/?$"
+  on=url) as |url_parts|}}
+./src/bin/cses_{{to_pascal_case url_parts._1}}.lean
+{{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="judge.u-aizu.ac.jp" on=url)}}
+{{#with (regex_captures
+  pattern="description\\.jsp\\?id=([A-Za-z0-9_]+)"
+  on=url) as |url_parts|}}
+./src/bin/aoj-{{to_pascal_case url_parts._1}}{{to_pascal_case ../title}}.lean
+{{/with}}
+{{/if}}
+'''
+template = "./Main.lean"
+modifier = '''
+{{{header}}}
+
+{{#each lib_files}}
+
+###### {{this.0}} #####
+{{{this.1}}}
+###### {{this.0}} #####
+
+{{/each}}
+
+{{{code}}}
+'''
+lib_check_regex = "import\\s*Src.{{name}}"
+
+[include]
+Cpio = "./Src/Cpio.lean"
+
+[toggle]
+create_file = true
+run_on_save = false
+submit_on_ac = false

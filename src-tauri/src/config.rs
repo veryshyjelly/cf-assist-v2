@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use tauri::State;
 
-use crate::utils::{extract_code_block, ResultTrait};
+use crate::utils::{extract_code_block, extract_header_block, ResultTrait};
 use crate::{info::Problem, utils::resolve_path, AppState};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -25,7 +25,6 @@ pub struct Config {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ToggleSettings {
-    // pub create_file: bool,
     pub run_on_save: bool,
     pub submit_on_ac: bool,
 }
@@ -84,6 +83,7 @@ mod {{@key}} {
 
 #[derive(Serialize)]
 struct TemplateData {
+    header: String,
     code: String,
     lib_files: Vec<(String, String)>,
 }
@@ -226,6 +226,7 @@ impl Config {
             .filter_map(|k| visited.get(&k).map(|v| (k, v.clone())))
             .collect::<Vec<_>>(); // or regular BTreeMap/HashMap if order not needed beyond template
 
+        let header = extract_header_block(&source_code);
         let source_code = extract_code_block(&source_code);
 
         bars.register_template_string("modify", &self.code.modifier)
@@ -233,6 +234,7 @@ impl Config {
 
         // Prepare context for the template
         let data = TemplateData {
+            header,
             code: source_code,
             lib_files,
         };
