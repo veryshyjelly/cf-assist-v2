@@ -34,10 +34,11 @@ handlebars = { version = "6.3.2", features = [
 ] }
 handlebars_misc_helpers = "0.17.0"
 regex = { version = "1.11.1", features = ["use_std"] }
-arboard = "3.6.0"
+arboard = "3.6.1"
+itertools = "0.14.0"
 
 [dependencies.uuid]
-version = "1.17.0"
+version = "1.19.0"
 features = [
     "v4",       # Lets you generate random UUIDs
     "fast-rng", # Use a faster (but still sufficiently random) RNG

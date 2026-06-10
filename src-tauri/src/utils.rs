@@ -31,30 +31,30 @@ pub fn resolve_path(dir: &Path, path: &str) -> PathBuf {
 }
 
 pub fn extract_header_block(source: &str) -> String {
-        if !source.contains("@head") {
-            return source.into();
-        }
+    if !source.contains("@head") {
+        return "".into();
+    }
 
-        let mut lines = source.lines();
-        // Find the start marker
-        while let Some(line) = lines.next() {
-            if line.contains("@head") && line.contains("begin") {
-                break;
-            }
+    let mut lines = source.lines();
+    // Find the start marker
+    while let Some(line) = lines.next() {
+        if line.contains("@head") && line.contains("begin") {
+            break;
         }
-        // Collect lines until the end marker
-        let mut code_block = Vec::new();
-        for line in lines {
-            if line.contains("@head") && line.contains("end") {
-                break;
-            }
-            code_block.push(line);
+    }
+    // Collect lines until the end marker
+    let mut code_block = Vec::new();
+    for line in lines {
+        if line.contains("@head") && line.contains("end") {
+            break;
         }
-        if code_block.is_empty() {
-            source.to_string()
-        } else {
-            code_block.join("\n").trim().to_string()
-        }
+        code_block.push(line);
+    }
+    if code_block.is_empty() {
+        source.to_string()
+    } else {
+        code_block.join("\n").trim().to_string()
+    }
 }
 
 pub fn extract_code_block(source: &str) -> String {

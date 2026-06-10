@@ -1,11 +1,13 @@
 use handlebars::Handlebars;
 use handlebars_misc_helpers::register;
+use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fs;
 use std::io::Write;
+use std::iter::once;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -20,6 +22,7 @@ pub struct Config {
     pub code: Code,
     pub include: HashMap<String, String>,
     pub editor: String,
+    pub editor_arguments: Vec<String>,
     pub toggle: ToggleSettings,
 }
 
@@ -43,35 +46,54 @@ impl Default for Config {
             author: "GOD".into(),
             code: Code {
                 filename: r#"
-{{#with (regex_captures
-  pattern="problemset/problem/(\\d+)/([A-Za-z0-9]+)"
-  on=url) as |url_parts|}}
-  {{#with (regex_captures
-    pattern="^[A-Za-z0-9]+\\.\\s*(.+)$"
-    on=../title) as |title_parts|}}
-./src/bin/{{url_parts._1}}-{{to_lower_case url_parts._2}}-{{to_kebab_case title_parts._1}}.rs
-  {{/with}}
+{{#if (regex_is_match pattern="codeforces.com" on=url)}}
+{{#with (regex_captures pattern="(?:problemset/problem|contest)/(\\d+)(?:/problem)?/([A-Za-z0-9]+)" on=url) as |url_parts|}}
+{{#with (regex_captures pattern="^[A-Za-z0-9]+\\.\\s*(.+)$" on=../title) as |title_parts|}}
+./src/bin/{{url_parts._1}}-{{to_lower_case url_parts._2}}-{{to_kebab_case title_parts._1}}.cpp
 {{/with}}
+{{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="atcoder.jp" on=url)}}
+    {{#with (regex_captures pattern="contests/([^/]+)/tasks/([^_]+)_([a-z]+)" on=url) as |url_parts|}}
+        {{#with (regex_captures pattern="^[A-Za-z0-9]+\\s*\\-\\s*(.+)$" on=../title) as |title_parts|}}
+./src/bin/{{url_parts._2}}-{{to_lower_case url_parts._3}}{{#if (to_kebab_case title_parts._1)}}-{{to_kebab_case title_parts._1}}{{/if}}.cpp
+        {{/with}}
+    {{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="cses.fi" on=url)}}
+    {{#with (regex_captures pattern="problemset/task/(\\d+)/?$" on=url) as |url_parts|}}
+./src/bin/cses-{{url_parts._1}}-{{to_kebab_case ../title}}.cpp
+    {{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="judge.u-aizu.ac.jp" on=url)}}
+    {{#with (regex_captures pattern="description\\.jsp\\?id=([A-Za-z0-9_]+)" on=url) as |url_parts|}}
+./src/bin/aoj-{{url_parts._1}}-{{to_kebab_case ../title}}.cpp
+    {{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="open.kattis.com" on=url)}}
+{{#with (regex_captures
+  pattern="problems/([^/?]+)/?$"
+  on=url) as |url_parts|}}
+./src/bin/{{url_parts._1}}.cpp
+{{/with}}
+{{/if}}
 "#
                 .into(),
                 template: "".into(),
                 modifier: r#"
-{{!-- Triple braces to prevent html escaping --}}
+{{!-- Iterate over each library is lib_files --}}
+{{#each lib_files}}
+{{{this.1}}}
+{{/each}}
 {{!-- Base code block --}}
 {{{code}}}
-
-{{!-- Iterate over each library in lib_files --}}
-{{#each lib_files}}
-mod {{@key}} {
-    {{{this}}}
-}
-{{/each}}
 "#
                 .into(),
-                lib_check_regex: "use.*{{name}}(::|;)".into(),
+                lib_check_regex: "#include \"../lib/{{name}}.h\"".into(),
             },
             include: HashMap::new(),
             editor: "code".into(),
+            editor_arguments: vec![],
             toggle: ToggleSettings {
                 // create_file: true,
                 run_on_save: true,
@@ -208,7 +230,7 @@ impl Config {
             }
 
             graph.insert(d.clone(), deps);
-            visited.insert(d.clone(), extract_code_block(v));
+            visited.insert(d.clone(), v.to_string());
         }
 
         #[cfg(debug_assertions)]
@@ -227,7 +249,22 @@ impl Config {
             .collect::<Vec<_>>(); // or regular BTreeMap/HashMap if order not needed beyond template
 
         let header = extract_header_block(&source_code);
+
+        let header = lib_files
+            .iter()
+            .map(|(_k, v)| extract_header_block(v))
+            .chain(once(header))
+            .map(|v| v.lines().map(|x| x.trim().to_string()).collect::<Vec<_>>())
+            .flatten()
+            .sorted()
+            .dedup()
+            .join("\n");
+
         let source_code = extract_code_block(&source_code);
+        let lib_code = lib_files
+            .into_iter()
+            .map(|(k, v)| (k, extract_code_block(&v)))
+            .collect();
 
         bars.register_template_string("modify", &self.code.modifier)
             .map_to_string()?;
@@ -236,7 +273,7 @@ impl Config {
         let data = TemplateData {
             header,
             code: source_code,
-            lib_files,
+            lib_files: lib_code,
         };
 
         let res = bars.render("modify", &data).map_to_string()?;

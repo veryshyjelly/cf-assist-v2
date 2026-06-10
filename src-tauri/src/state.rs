@@ -177,6 +177,7 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     }
 
     let mut cmd = Command::new(config.editor.clone())
+        .args(config.editor_arguments.clone())
         .arg(&file_path)
         .spawn()
         .map_to_string()?;
