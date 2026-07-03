@@ -1,0 +1,58 @@
+author = "Ayush Biswas"
+editor = "code"
+editor_arguments = []
+
+[code]
+filename = '''
+{{#if (regex_is_match pattern="codeforces.com" on=url)}}
+{{#with (regex_captures pattern="(?:problemset/problem|contest)/(\\d+)(?:/problem)?/([A-Za-z0-9]+)" on=url) as |url_parts|}}
+{{#with (regex_captures pattern="^[A-Za-z0-9]+\\.\\s*(.+)$" on=../title) as |title_parts|}}
+./src/{{url_parts._1}}-{{to_lower_case url_parts._2}}-{{to_kebab_case title_parts._1}}.ll
+{{/with}}
+{{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="atcoder.jp" on=url)}}
+    {{#with (regex_captures pattern="contests/([^/]+)/tasks/([^_]+)_([a-z]+)" on=url) as |url_parts|}}
+        {{#with (regex_captures pattern="^[A-Za-z0-9]+\\s*\\-\\s*(.+)$" on=../title) as |title_parts|}}
+./src/{{url_parts._2}}-{{to_lower_case url_parts._3}}{{#if (to_kebab_case title_parts._1)}}-{{to_kebab_case title_parts._1}}{{/if}}.ll
+        {{/with}}
+    {{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="cses.fi" on=url)}}
+    {{#with (regex_captures pattern="problemset/task/(\\d+)/?$" on=url) as |url_parts|}}
+./src/cses-{{url_parts._1}}-{{to_kebab_case ../title}}.ll
+    {{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="judge.u-aizu.ac.jp" on=url)}}
+    {{#with (regex_captures pattern="description\\.jsp\\?id=([A-Za-z0-9_]+)" on=url) as |url_parts|}}
+./src/aoj-{{url_parts._1}}-{{to_kebab_case ../title}}.ll
+    {{/with}}
+{{/if}}
+{{#if (regex_is_match pattern="open.kattis.com" on=url)}}
+{{#with (regex_captures
+  pattern="problems/([^/?]+)/?$"
+  on=url) as |url_parts|}}
+./src/{{url_parts._1}}.ll
+{{/with}}
+{{/if}}
+'''
+template = "./main.ll"
+modifier = """
+{{header}}
+
+{{!-- Iterate over each library is lib_files --}}
+{{#each lib_files}}
+{{{this.1}}}
+{{/each}}
+
+{{!-- Base code block --}}
+{{{code}}}
+"""
+lib_check_regex = '; @include {{name}}'
+
+[include]
+lib = "./lib"
+
+[toggle]
+run_on_save = true
+submit_on_ac = false

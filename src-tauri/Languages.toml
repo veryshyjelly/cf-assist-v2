@@ -146,10 +146,13 @@ comment = "--"
 cf_id = 19
 name = "Ocaml"
 source_file = "main.ml"
-compiler_cmd = "ocamlc"
-compiler_args = ["main.ml"]
+compiler_cmd = "ocamlfind"
+compiler_args = ["ocamlopt", "-O2", "-o", "a.out", "main.ml", 
+		"-linkpkg", "-thread", "-package", 
+		"str,num,zarith,threads,containers,core,iter,batteries"]
 run_cmd = "./a.out"
-check_args = ["--version"]
+check_args = ["list"]
+
 
 [17]
 name = "Octave"
@@ -361,3 +364,21 @@ compiler_cmd = "leanbuild"
 run_cmd = "./main"
 check_args = ["-v"]
 comment = "--"
+
+[39]
+name = "Crystal"
+source_file = "main.cr"
+compiler_cmd = "crystal"
+compiler_args = ["build", "main.cr", "-o", "main"]
+run_cmd = "./main"
+check_args = ["-v"]
+comment = "#"
+
+[40]
+name = "LLVM IR"
+source_file = "main.ll"
+compiler_cmd = "clang"
+compiler_args = ["main.ll", "-o", "main"]
+run_cmd = "./main"
+check_args = ["-v"]
+comment = ";"

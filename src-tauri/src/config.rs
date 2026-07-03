@@ -95,7 +95,6 @@ impl Default for Config {
             editor: "code".into(),
             editor_arguments: vec![],
             toggle: ToggleSettings {
-                // create_file: true,
                 run_on_save: true,
                 submit_on_ac: false,
             },

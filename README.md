@@ -1,4 +1,17 @@
-# CP-Assist
+> [!CAUTION]
+> **🚨 PROJECT DEPRECATED: Please use `cocom`!**
+> 
+> I am **no longer maintaining this Tauri/React desktop application**, nor am I maintaining the manual usage and configuration instructions documented below. 
+> 
+> I have completely replaced `cp-assist` with **[cocom](https://github.com/veryshyjelly/cocom)** — a much faster, lightweight, and fully terminal-native Go TUI companion tool that does everything this app does (parsing, sandboxed compilation, linking) but runs directly in your terminal without desktop app overhead.
+> 
+> The information below is kept only as an archive of my older workflow. For my current, actively maintained workflow tool, please head over to the **[`cocom` repository](https://github.com/veryshyjelly/cocom)**.
+
+![Status: Archived](https://img.shields.io/badge/status-deprecated-red?style=for-the-badge) ![Successor: cocom](https://img.shields.io/badge/successor-cocom-blue?style=for-the-badge)
+
+---
+
+# CP-Assist (ARCHIVED)
 
 CP-Assist is a powerful desktop application designed to supercharge your competitive programming workflow. It seamlessly integrates with tools like [Competitive Companion](https://github.com/jmerle/competitive-companion) to automate test case management, code execution, and dependency handling, letting you focus on solving problems.
 

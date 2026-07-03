@@ -1,6 +1,7 @@
 author = "Ayush Biswas"
 
 editor = "pycharm"
+editor_arguments = []
 
 [code]
 filename = '''
